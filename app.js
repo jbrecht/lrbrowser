@@ -479,10 +479,10 @@ var doSlice = function() {
 	window.keys = keys;
 	handleSlice();
 }
-
+/*
 function debug(msg){
     $('#debug').append('<p>' + msg + '</p>');
-}
+}*/
 
 jQuery(function() {
 	jQuery("#search-form").submit(function() {

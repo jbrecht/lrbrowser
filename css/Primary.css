@@ -1,0 +1,115 @@
+﻿
+.mainbody{  margin-left: auto;margin-right: auto; width:960px}
+
+/*	Layout 1	*/				
+.Layout1_1{ width:33.3%; background-color:Red;  height:400px; float:left;}						
+.Layout1_2{ width:33.3%; background-color:Blue; float:left; height:400px; }						
+.Layout1_3{ width:33.3%; background-color:Green; float:left; height:400px; }						
+.Layout1_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 2	*/				
+						
+.Layout2_1{ width:30%; background-color:Red;  height:400px; float:left;}						
+.Layout2_2{ width:70%; background-color:Blue; float:left; height:400px; }						
+.Layout2_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 3	*/				
+						
+.Layout3_1{ width:70%; background-color:Red;  height:400px; float:left;}						
+.Layout3_2{ width:30%; background-color:Blue; float:left; height:400px; }						
+.Layout3_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 4	*/				
+.Layout4_1{ width:60%; background-color:Red;  height:400px; float:left;}						
+.Layout4_2{ width:20%; background-color:Blue; float:left; height:400px; }						
+.Layout4_3{ width:20%; background-color:Green; float:left; height:400px; }						
+.Layout4_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 5	*/				
+.Layout5_1{ width:20%; background-color:Red;  height:400px; float:left;}						
+.Layout5_2{ width:20%; background-color:Blue; float:left; height:400px; }						
+.Layout5_3{ width:60%; background-color:Green; float:left; height:400px; }						
+.Layout5_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 6	*/				
+.Layout6_1{ width:25%; background-color:Red;  height:400px; float:left;}						
+.Layout6_2{ width:25%; background-color:Blue; float:left; height:400px; }						
+.Layout6_3{ width:25%; background-color:Green; float:left; height:400px; }						
+.Layout6_4{ width:25%; background-color:purple; float:left; height:400px; }						
+.Layout6_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 7	*/				
+.Layout7_1{ width:20%; background-color:Red;  height:400px; float:left;}						
+.Layout7_2{ width:60%; background-color:Blue; float:left; height:400px; }						
+.Layout7_3{ width:20%; background-color:Green; float:left; height:400px; }						
+.Layout7_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 8	*/				
+.Layout8_1{ width:100%; background-color:Red;  height:400px; float:left;}						
+.Layout8_2{ width:100%; background-color:Blue; float:left; height:100px; }						
+.Layout8_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 9	*/				
+.Layout9_1{ width:20%; background-color:Red;  height:800px; float:left;}						
+.Layout9_2{ width:60%; background-color:Blue; float:left; height:800px; }						
+.Layout9_3{ width:20%; background-color:Green; float:left; height:800px; }						
+.Layout9_header{ background-color:Yellow; width:0%; height:0px;}						
+/*	Layout 10	*/				
+.Layout10_1{ width:50%; background-color:Red;  height:400px; float:left;}						
+.Layout10_2{ width:50%; background-color:Blue; float:left; height:400px; }						
+.Layout10_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 11	*/				
+.Layout11_1{ width:50%; background-color:Red;  height:400px; float:left;}						
+.Layout11_2{ width:50%; background-color:Blue; float:left; height:400px; }						
+.Layout11_3{ width:50%; background-color:Green; float:left; height:400px; }						
+.Layout11_4{ width:50%; background-color:Orange; float:left; height:400px; }						
+.Layout11_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 12	*/				
+.Layout12_1{ width:25%; background-color:Red;  height:800px; float:left;}						
+.Layout12_2{ width:25%; background-color:Blue; float:left; height:800px; }						
+.Layout12_3{ width:50%; background-color:Green; float:left; height:400px; }						
+.Layout12_4{ width:50%; background-color:Orange; float:left; height:400px; }						
+.Layout12_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 13	*/				
+.Layout13_1{ width:60%; background-color:Red;  height:600px; float:left;}						
+.Layout13_header{ background-color:Yellow; width:60%; height:100px;}						
+/*	Layout 14	*/				
+.Layout14_1{ width:100%; background-color:Red;  height:200px; float:left;}						
+.Layout14_2{ width:100%; background-color:Blue; float:left; height:600px; }						
+.Layout14_3{ width:100%; background-color:Green; float:left; height:100px; }						
+.Layout14_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 15	*/				
+.Layout15_1{ width:50%; background-color:Red;  height:800px; float:left;}						
+.Layout15_2{ width:50%; background-color:Blue; float:left; height:400px; }						
+.Layout15_3{ width:50%; background-color:Green; float:left; height:400px; }						
+.Layout15_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 16	*/				
+.Layout16_1{ width:100%; background-color:Red;  height:200px; float:left;}						
+.Layout16_2{ width:33.3%; background-color:Blue; float:left; height:600px; }						
+.Layout16_3{ width:33.3%; background-color:Green; float:left; height:600px; }						
+.Layout16_4{ width:33.3%; background-color:purple; float:left; height:600px; }						
+.Layout16_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 17	*/				
+.Layout17_1{ width:33.3%; background-color:Red;  height:200px; float:left;}						
+.Layout17_2{ width:33.3%; background-color:Blue; float:left; height:200px; }						
+.Layout17_3{ width:33.3%; background-color:Green; float:left; height:200px; }						
+.Layout17_4{ width:100%; background-color:purple; float:left; height:400px; }						
+.Layout17_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 18	*/				
+.Layout18_1{ width:30%; background-color:Red;  height:200px; float:left;}						
+.Layout18_2{ width:70%; background-color:Blue; float:left; height:200px; }						
+.Layout18_3{ width:100%; background-color:purple; float:left; height:400px; }						
+.Layout18_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 19	*/				
+.Layout19_1{ width:100%; background-color:Red;  height:200px; float:left;}						
+.Layout19_2{ width:50%; background-color:Blue; float:left; height:600px; }						
+.Layout19_3{ width:50%; background-color:purple; float:left; height:600px; }						
+.Layout19_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 20	*/				
+						
+.Layout20_1{ width:33.3%; background-color:Red;  height:200px; float:left;}						
+.Layout20_2{ width:33.3%; background-color:Blue; float:left; height:200px; }						
+.Layout20_3{ width:33.3%; background-color:Green; float:left; height:200px; }						
+.Layout20_4{ width:50%; background-color:purple; float:left; height:400px; }						
+.Layout20_5{ width:50%; background-color:Orange; float:left; height:400px; }						
+.Layout20_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 21	*/				
+.Layout21_1{ width:100%; background-color:Red;  height:300px; float:left; margin-top:100px;}						
+.Layout21_header{ background-color:Yellow; width:100%; height:100px;}						
+/*	Layout 22	*/				
+.Layout22_1{ width:100%; background-color:Red;  height:800px; float:left;}						
+.Layout22_header{ background-color:Yellow; width:0%; height:0px;}						
+
+
