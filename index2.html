@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
-    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Learning Registry Browser</title>
-		
 		<link type="text/css" href="themes/jquery.ui.all.css" rel="stylesheet" />
 		<script type="text/javascript" src="js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.core.js"></script>
@@ -14,23 +13,20 @@
 		<script type="text/javascript" src="js/ui/jquery.ui.button.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.mouse.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.slider.js"></script>
-		<script type="text/javascript" src="js/ui/jquery.ui.dialog.js"></script>	
+		<script type="text/javascript" src="js/ui/jquery.ui.dialog.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.progressbar.js"></script>
+		<script type="text/javascript" src="js/ui/jquery.ui.accordion.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.eComboBox.js"></script>
 		<script language="javascript" type="text/javascript" src="js/jit-yc.js"></script>
-		
-		<script type="text/javascript" src="lrbrowser2.js"> </script>
-
+		<script type="text/javascript" src="lrbrowser2.js"></script>
 		<link type="text/css" href="themes/Aristo/Aristo.css" rel="stylesheet" />
 		<link type="text/css" href="themes/demos.css" rel="stylesheet" />
 		<link type="text/css" href="css/lrbrowser.css" rel="stylesheet" />
 		<link type="text/css" href="css/Hypertree.css" rel="stylesheet" />
-
-    </head>
-    
+	</head>
 	<body>
 		<div class=container>
-			<div class=header>			
+			<div class=header>
 				<div class="text">
 					<h2>Learning Registry Browser</h2>
 				</div>
@@ -40,32 +36,45 @@
 						Search
 					</button>
 					<select id="serverselect" name="Server Select">
-						<option>127.0.0.1:5000</option><option>lrdev03.learningregistry.org</option><option>lrtest01.learningregistry.org</option>
+						<option>127.0.0.1:5000</option>
+						<option>node01.public.learningregistry.net</option>
+						<option>lrdev03.learningregistry.org</option>
+						<option>lrtest01.learningregistry.org</option>
 					</select>
 				</div>
 			</div>
 			<div class=left_column >
 				<div class="text" >
 					<h4>STATUS:</h4>
-					<div style="text-align: center;"><div id="progressbar" align="center"></div></div>
-					<div id="status">...</div>
+					<div style="text-align: center;">
+						<div id="progressbar" align="center"></div>
+					</div>
+					<div id="status">
+						...
+					</div>
+				</div>
+				<br>
+				<div class="text">
+					<h4>RESULTS SUMMARY:</h4>
+					<div id="results_summary"></div>
 				</div>
 				<br>
 				<div class="text">
 					<h4>DEBUG:</h4>
-					<div id="debug">...</div>
-				</div>
-				<br>
-				<div class="text">
-					<h4>LOG:</h4>
-					<div id="log"></div>
+					<div id="debug">
+						...
+					</div>
 				</div>
 			</div>
-			<div class=center_column ><div id="infovis"/></div></div>
-			<div class=right_column >
-				<div id="inner-details">Inner Details</div> 
+			<div class=center_column >
+				<div id="infovis"/>
+			</div>
+		</div>
+		<div class=right_column >
+			<div id="document_list">
+				<h4><span id="doc_list_header"></span></h4>
+				<div id="doc_list_accordion"/>
 			</div>
 		</div>
 	</body>
 </html>
-				

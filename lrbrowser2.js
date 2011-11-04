@@ -6,17 +6,23 @@
 var NODE_URL = "http://127.0.0.1:5000";
 var typeReturnCount = 0;
 
-var TRIM_SIZE = 30;
+var TRIM_SIZE = 20;
 
 var searchTerm;
-//var sliceAsTagResult;
-//var sliceAsIdentityResult;
 var sliceAsTagResultCount;
 var sliceAsIdentityResultCount;
 var max_results;
-var search_data;
-var sliceLimit=-1;
+var SLICE_LIMIT_MAX = 100000;
+var SUGGESTED_SLICE_LIMIT = 500;
+var sliceLimit=SLICE_LIMIT_MAX;
+
+var summary_doc_count = 0;
+var summary_tag_count = 0;
+var summary_id_count = 0;
+
+
 //var currentNodes;
+var post_confirm_search_data;
 
 var TAG = "Tag";
 var IDENTITY = "Identity";
@@ -24,6 +30,8 @@ var searchTermType;
 
 var topNode;
 var nodeDictionary = new Object();
+var secondaryNodeDictionary = new Object();
+var docDictionary = new Object();
 
 var labelType, useGradients, nativeTextSupport, animate;
 
@@ -32,6 +40,7 @@ var identityTypes = ["curator", "owner", "submitter"];
 var ht;
 
 var $search_confirm_dialog;
+
 
 (function() {
   var ua = navigator.userAgent,
@@ -51,6 +60,7 @@ var $search_confirm_dialog;
 
 $(function(){
 	$("button").button();
+	//$("#doc_list_accordion" ).accordion();
     $("#Search").button({
         icons: {
             primary: 'ui-icon-search'
@@ -91,14 +101,15 @@ $(function(){
 		modal : true,
 		buttons : {
 			"Retrieve all results" : function() {
-				sliceLimit=-1;
+				sliceLimit=SLICE_LIMIT_MAX;
 				$(this).dialog("close");
-				handleSlice(parseSliceResult);
+				handleSlice(parseSliceResult, post_confirm_search_data);
 			},
-			"Retrieve first 1000 results" : function() {
-				sliceLimit=1000;
+			"Retrieve first " + SUGGESTED_SLICE_LIMIT + " results" : function() {
+				sliceLimit=SUGGESTED_SLICE_LIMIT;
+				max_results=SUGGESTED_SLICE_LIMIT;
 				$(this).dialog("close");
-				handleSlice(parseSliceResult);
+				handleSlice(parseSliceResult, post_confirm_search_data);
 			},
 			Cancel : function() {
 				sliceLimit=-1;
@@ -106,10 +117,6 @@ $(function(){
 			}
 		}
 	});
-
-
-	
-	
     buildGraph();
 });
 
@@ -120,6 +127,13 @@ function status(msg){
     $('#status').html(msg);
 }
 
+function summary(){
+	var msg = "<p>Found " + summary_doc_count + " documents containing ";
+	msg = msg + searchTermType + " " + searchTerm + "</p>";
+	msg = msg + "<p>Results contained " + summary_tag_count + " tags & " +summary_id_count + " identities.</p>";
+	msg = msg + "<p>Limiting display to " + TRIM_SIZE + " items.";
+    $('#results_summary').html(msg);
+}
 
 
 function startDetermineType() {
@@ -148,7 +162,7 @@ function startDetermineType() {
 }
 
 function compareTagAndIdentityCountResults() {
-	
+	var search_data;
 	if(sliceAsTagResultCount > sliceAsIdentityResultCount) {
 		searchTermType = TAG;
 		max_results = sliceAsTagResultCount;
@@ -158,9 +172,14 @@ function compareTagAndIdentityCountResults() {
 		max_results = sliceAsIdentityResultCount;
 		search_data = buildSliceObject({"identity": searchTerm});
 	}
-	status("Type is " + searchTermType);
-	if(max_results>1000) confirmSearch();
-	else handleSlice(parseSliceResult);
+	if(max_results>SUGGESTED_SLICE_LIMIT) {
+		post_confirm_search_data = search_data
+		confirmSearch(search_data);
+	}
+	else  {
+		sliceLimit=SLICE_LIMIT_MAX;
+		handleSlice(parseSliceResult, search_data);
+	}
 }
 
 function confirmSearch() {
@@ -178,51 +197,55 @@ function buildSliceObject(dataArg) {
 	return sliceObj;
 }
 
-function buildSliceObject(dataArg) {
-	var sliceObj = {
-		  url: NODE_URL+ "/slice",
-		  dataType: 'jsonp',
-		  jsonp: 'callback',
-		  data: dataArg
-	};
-	return sliceObj;
-}
 
-var handleSlice = function(finalCallback) {
+var handleSlice = function(finalCallback, search_data, quiet, parentNode) {
 	var finalResult = new Array();
 	var iterateCount = 0;
 	
 	var iterateSlice = function(slicedata) {
 		if(slicedata) {
 			finalResult = finalResult.concat(slicedata.documents);
-			status("Retrieved data " + finalResult.length + "/" + max_results);
+			if(!quiet) status("Retrieved data " + finalResult.length + "/" + max_results);
 			$( "#progressbar" ).progressbar( "option", "value", 100*(finalResult.length/max_results) );
 			var doc = slicedata.documents[0];
 			//status(JSON.stringify(doc));
 			if(slicedata.resumption_token) {
 				if(search_data.data.resumption_token == slicedata.resumption_token) {
-					status("Received the same resumption token twice, aborting...");
-				finalCallback(finalResult);
-				} else {
+					if(!quiet) status("Received the same resumption token twice, aborting...");
+					finalCallback(finalResult, parentNode);
+				} else if(finalResult.length > sliceLimit){
+					if(!quiet) status("Reached limit, aborting...");
+					finalCallback(finalResult, parentNode);
+				}else {
 					search_data.data.resumption_token = slicedata.resumption_token
 					$.ajax(search_data);	
 				}
 			} else {
-				finalCallback(finalResult);
+				finalCallback(finalResult, parentNode);
 			}
 		} else {
 			$.ajax(search_data);
 		}
 	}
-	status("Querying the Learning Registry...");
-	$( "#progressbar" ).progressbar({
-			disabled: false,
-			value: 0
-	});
+	if(!quiet) {
+		status("Querying the Learning Registry...");
+		$( "#progressbar" ).progressbar({
+				disabled: false,
+				value: 0
+		});
+	}
 	search_data.success = iterateSlice;
 	iterateSlice();
 }
 
+function buildDoc(doc) {
+	return {
+		id: doc.doc_id,
+		url: doc.resource_data_description.resource_locator,
+		keys: doc.resource_data_description.keys,
+		identity: doc.resource_data_description.identity
+	}
+}
 
 function buildNode(value, parentValue, type) {
 	var idVal;
@@ -240,7 +263,7 @@ function buildNode(value, parentValue, type) {
 			$type : shape,
 			$dim : 1,
 			datatype: type,
-			urls: [],
+			doc_ids: [],
 		},
 		children: []
 	}
@@ -250,10 +273,10 @@ function addNodeChild(node, child) {
 	node.children.push(child);
 }
 
-function addNodeURL(node, url) {
-	if($.inArray(url, node.data.urls)<0) {
-		node.data.urls.push(url);
-		var newSize = 50 * (node.data.urls.length / max_results);
+function addNodeDocID(node, doc_id) {
+	if($.inArray(doc_id, node.data.doc_ids)<0) {
+		node.data.doc_ids.push(doc_id);
+		var newSize = 50 * (node.data.doc_ids.length / max_results);
 		node.data.$dim = newSize;
 	}
 }
@@ -263,31 +286,36 @@ function parseSliceResult(results) {
 	topNode = buildNode(searchTerm, "", searchTermType);
 	nodeDictionary[searchTerm+"-"+searchTermType] = node;
 	var documents = results;
+	summary_doc_count = documents.length;
+	summary_tag_count = 0;
+	summary_id_count = 0;
+	if(searchTermType==TAG) summary_tag_count++;
+	else summary_id_count++;
 	
 	status("Parsing results for " + documents.length + " documents");
 	for (var i=0; i < documents.length; i++) {
 		doc = documents[i];
 		if (doc.resource_data_description && doc.resource_data_description.resource_locator) {
-			var url = doc.resource_data_description.resource_locator;
-			addNodeURL(topNode, url);
+			//var url = doc.resource_data_description.resource_locator;
+			var doc_id = doc.doc_ID;
+			if(!docDictionary[doc_id]) docDictionary[doc_id] = buildDoc(doc);
+			addNodeDocID(topNode, doc_id);
 			if (doc.resource_data_description.keys) {
 				var keys = doc.resource_data_description.keys;
 				for (var j=0; j<keys.length; j++) {
 					var key = keys[j].toLowerCase().trim();
-					var id = searchTerm+"-"+key+"-"+TAG
-					//debug(id);
-					if(!nodeDictionary[id]) {
+					var node_id = searchTerm+"-"+key+"-"+TAG
+					if(!nodeDictionary[node_id]) {
 						var node = buildNode(key, searchTerm, TAG);
-						addNodeURL(node, url);
-						nodeDictionary[id] = node;
+						summary_tag_count++;
+						addNodeDocID(node, doc_id);
+						nodeDictionary[node_id] = node;
 						addNodeChild(topNode, node)
 					} else {
-						addNodeURL(nodeDictionary[id], url);
+						addNodeDocID(nodeDictionary[node_id], doc_id);
 					}
 				}
 			} else {
-				debug("no keys!");
-				debug(JSON.stringify(doc));
 			}
 			
 			if (doc.resource_data_description.identity) {
@@ -296,18 +324,17 @@ function parseSliceResult(results) {
 					var type = identityTypes[k];
 					if(identities[type]) {
 						var ident = identities[type].toLowerCase().trim();
-						var id = searchTerm+"-"+ident+"-"+TAG
-						//debug(id);
-						if(!nodeDictionary[id]) {
+						var node_id = searchTerm+"-"+ident+"-"+TAG
+						if(!nodeDictionary[node_id]) {
 							var node = buildNode(ident, searchTerm, IDENTITY);
-							addNodeURL(node, url);
-							nodeDictionary[id] = node;
+							summary_id_count++;
+							addNodeDocID(node, doc_id);
+							nodeDictionary[node_id] = node;
 							addNodeChild(topNode, node)
 						} else {
-							addNodeURL(nodeDictionary[id], url);
+							addNodeDocID(nodeDictionary[node_id], doc_id);
 						}
 					} else {
-						//debug("nothing for type: " + type)
 					}
 				}
 			} else {
@@ -316,22 +343,93 @@ function parseSliceResult(results) {
 			}
 		}
 	}
-	var trimmed = trimNodes(topNode);
+	status("Parsing complete.");
+	summary();
+	topNode.children = trimChildren(topNode.children, TRIM_SIZE);
+	//var trimmed = trimNodes(topNode, TRIM_SIZE);
 	//debug(JSON.stringify(topNode));
-	loadGraphData(trimmed);
+	loadGraphData(topNode);
+	peekAhead(topNode);
 }
 
-function compareURLcounts(node1, node2) {
-	return node2.data.urls.length - node1.data.urls.length;
+function peekAhead(topNode) {
+	var peekCount = 0;
+	for each(var node in topNode.children) {
+		var search_data;
+		if(node.data.datatype==TAG) {
+			search_data= buildSliceObject({"any_tags": node.name});
+		}else {
+			search_data= buildSliceObject({"identity": node.name});
+		}
+		handleSlice(parseSecondarySliceResult, search_data, true, node);
+	}
+}
+function parseSecondarySliceResult(results, parentNode) {
+	
+	var documents = results;
+	for (var i=0; i < documents.length; i++) {
+		doc = documents[i];
+		if (doc.resource_data_description && doc.resource_data_description.resource_locator) {
+			var doc_id = doc.doc_ID;
+			if(!docDictionary[doc_id]) docDictionary[doc_id] = buildDoc(doc);
+			if (doc.resource_data_description.keys) {
+				var keys = doc.resource_data_description.keys;
+				for (var j=0; j<keys.length; j++) {
+					var key = keys[j].toLowerCase().trim();
+					var node_id = searchTerm+"-"+key+"-"+TAG
+					if(!nodeDictionary[node_id]) {
+						var node = buildNode(key, searchTerm, TAG);
+						addNodeChild(parentNode, node)
+					} else {
+					}
+				}
+			} else {
+			}
+			
+			if (doc.resource_data_description.identity) {
+				var identities = doc.resource_data_description.identity;
+				for (var k=0; k<identityTypes.length; k++) {
+					var type = identityTypes[k];
+					if(identities[type]) {
+						var ident = identities[type].toLowerCase().trim();
+						var node_id = searchTerm+"-"+ident+"-"+TAG
+						if(!nodeDictionary[node_id]) {
+							var node = buildNode(ident, searchTerm, IDENTITY);
+							addNodeChild(parentNode, node)
+						} else {
+						}
+					} else {
+					}
+				}
+			} else {
+				//debug("no identities!");
+				//debug(JSON.stringify(doc));
+			}
+		}
+	}
+	parentNode.children = trimChildren(parentNode.children, 10);
+	//debug(JSON.stringify(topNode));
+	
+	loadGraphData(topNode);
 }
 
-function trimNodes(node) {
+function compareDocCounts(node1, node2) {
+	return node2.data.doc_ids.length - node1.data.doc_ids.length;
+}
+
+function trimNodes(node, trimTo) {
+	var children = node.children;
+	children = children.sort(compareDocCounts);
+	children = children.slice(0,trimTo);
 	var newNode = jQuery.extend(true, {}, node);
-	var children = newNode.children;
-	children = children.sort(compareURLcounts);
-	children = children.slice(0,TRIM_SIZE);
 	newNode.children = children;
 	return newNode;
+}
+
+function trimChildren(children, trimTo) {
+	children = children.sort(compareDocCounts);
+	children = children.slice(0,trimTo);
+	return children;
 }
 
 function buildGraph() {
@@ -363,7 +461,7 @@ function buildGraph() {
       //labels. This method is only triggered on label
       //creation
       onCreateLabel: function(domElement, node){
-          domElement.innerHTML = node.name + " ("+node.data.urls.length+")";
+          domElement.innerHTML = node.name + " ("+node.data.doc_ids.length+")";
           $jit.util.addEvent(domElement, 'click', function () {
               ht.onClick(node.id, {
                   onComplete: function() {
@@ -379,11 +477,11 @@ function buildGraph() {
           style.display = '';
           style.cursor = 'pointer';
           if (node._depth <= 1) {
-              style.fontSize = "1.2em";
+              style.fontSize = "1.1em";
               style.color = "#ddd";
 
           } else if(node._depth == 2){
-              style.fontSize = "1.0em";
+              style.fontSize = "0.9em";
               style.color = "#555";
 
           } else {
@@ -395,29 +493,61 @@ function buildGraph() {
           style.left = (left - w / 2) + 'px';
       },
       
-      onComplete: function(){
-          //Log.write("done");
-          
-          //Build the right column relations list.
-          //This is done by collecting the information (stored in the data property) 
-          //for all the nodes adjacent to the centered node.
-          var node = ht.graph.getClosestNodeToOrigin("current");
-          var html = "<h4>" + node.name + "</h4><b>Connections:</b>";
-          html += "<ul>";
-          node.eachAdjacency(function(adj){
-              var child = adj.nodeTo;
-              if (child.data) {
-                  var rel = (child.data.band == node.name) ? child.data.relation : node.data.relation;
-                  html += "<li>" + child.name + " " + "<div class=\"relation\">(relation: " + rel + ")</div></li>";
-              }
-          });
-          html += "</ul>";
-          $jit.id('inner-details').innerHTML = html;
-      }
-    });
+
+
+		onComplete: function() {
+			function buildListing(doc_id) {
+				var doc = docDictionary[doc_id];
+				if(doc) {
+					var url = doc.url;
+					var obtain_url = NODE_URL + '/obtain?by_doc_ID=true&request_id='+doc_id
+					var output = '<h3><a href="#">' + doc_id + '</a></h3>';
+					output += '<div><a href="' + url + '" target="_blank">View resource</a>'
+					output += ' | <a href="' + obtain_url + '" target="_blank">View Full Learning Registry entry</a> <br><br>';
+					for (var identity_type in doc.identity) {
+    					var identity_value = doc.identity[identity_type];
+    					output += '<b>'+identity_type+'</b>: ' + identity_value + '<br>';
+    				}
+					output += '</p><b>keywords</b>: ';
+					output += doc.keys.join(", ");
+					//for each(var doc_key in doc.keys) {
+					//	output += doc_key + ', ';
+					//}
+					output += '</ul>';
+					output += '</div>';
+					return output;
+				} else {
+					return "---";
+				}
+			}          
+			var node = ht.graph.getClosestNodeToOrigin("current");
+			$("#doc_list_header").html('Entries for: ' + node.data.datatype + ' <b>"' + node.name + '"</b>');
+			$("#doc_list_accordion").remove();
+			$("#document_list").append('<div id="doc_list_accordion"/>');
+			for each(var doc_id in node.data.doc_ids) {
+				var listing = buildListing(doc_id);
+				$("#doc_list_accordion").append(listing);
+			}
+			buildAccordion();
+		}
+	});
 }
 
+function buildAccordion() {
+	$("#doc_list_accordion").accordion({
+		autoHeight: false,
+		collapsible: true
+	});
+}
 
+function appendGraphData(json) {
+    //load JSON data.
+    ht.loadJSON(json);
+    //compute positions and plot.
+    ht.refresh();
+    //end
+    ht.controller.onComplete();
+}
 
 function loadGraphData(json) {
 	status("Loading graph data");
