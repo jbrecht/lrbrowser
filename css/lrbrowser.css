@@ -1,12 +1,12 @@
 .left_column {
-	width: 200px;
+	width: 400px;
 	background-color: White;
-	height: 500px;
+	height: 800px;
 	float: left;
 }
 .center_column {
-	width: 1000px;
-	height: 1000px;
+	width: 800px;
+	height: 800px;
 	background-color: White;
 	float: left;
 }
@@ -15,7 +15,7 @@
 	background-color: White;
 	float: left;
     text-align: left;
-	height: 500px;
+	height: 800px;
 }
 .header {
 	background-color: White;
@@ -31,8 +31,8 @@
 }
 #infovis {
     position:relative;
-	width: 1000px;
-	height: 1000px;
+	width: 800px;
+	height: 800px;
     margin:auto;
     overflow:hidden;
     background-color:#1a1a1a;

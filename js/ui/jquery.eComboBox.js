@@ -29,6 +29,8 @@
 
 (function( $ ){
   
+  var NEW = '{NEW NODE}'
+  
   var methods = {
      init : function( options ) {
 		
@@ -54,7 +56,7 @@
 			$(this).data("settings", settings);
 			
 			if (settings.allowNewElements){
-				selectElement.prepend('<option>{NEW ELEMENT}</option>');
+				selectElement.append('<option>'+NEW+'</option>');
 			}
 		  
 			// Create Wrapper Element 
@@ -87,15 +89,15 @@
 				selected = $(this).val();
 				
 				if(e.keyCode == "46"){ // del-button
-					if(selected != "{NEW ELEMENT}"){
+					if(selected != NEW){
 						$(this).children("option:selected").remove();
 					}
 					return;
 				}
 				
-				if( selected=="{NEW ELEMENT}" || settings['editableElements'] ) {
+				if( selected==NEW || settings['editableElements'] ) {
 					inputElement.css({"display":"inline"});
-					if(selected=="{NEW ELEMENT}"){
+					if(selected==NEW){
 						inputElement.val( "" ).focus();
 					}else if(settings['editableElements']){
 						inputElement.val( $(this).val() ).focus();
@@ -104,7 +106,7 @@
 			});
 				
 			selectElement.change( function(e){
-				if($(this).val()=="{NEW ELEMENT}"){
+				if($(this).val()==NEW){
 					selected = $(this).val();
 					inputElement.css({"display":"inline"});
 					inputElement.val( "" ).focus();
@@ -115,7 +117,7 @@
 			
 			inputElement.keyup(function(e){
 				if(e.keyCode == 13){ //enter
-					if(selected=="{NEW ELEMENT}" ){
+					if(selected=="NEW" ){
 						if ($(this).val() != ""){
 							selectElement.append('<option>'+$.trim($(this).val())+'</option>');
 							selectElement.val($(this).val());
@@ -151,14 +153,14 @@
 	 },
 	 disableAddingNewElements: function(){
 		var fChild = $(this).children().first();
-		if(fChild.text() == "{NEW ELEMENT}"){
+		if(fChild.text() == NEW){
 			fChild.remove();
 		}
 	 },
 	 enableAddingNewElements: function(){
 		var fChild = $(this).children().first();
-		if(fChild.text() != "{NEW ELEMENT}"){
-			$(this).prepend('<option>{NEW ELEMENT}</option>');
+		if(fChild.text() != NEW){
+			$(this).prepend('<option>'+NEW+'</option>');
 		}
 	 },
 	 disableEditingElements: function(){
