@@ -8,6 +8,7 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		<title>Learning Registry Browser</title>
 		<link type="text/css" href="themes/jquery.ui.all.css" rel="stylesheet" />
 		<script type="text/javascript" src="js/jquery-1.6.2.js"></script>
+		<script type="text/javascript" src="js/jquery.xml2json.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.core.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.widget.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.button.js"></script>
@@ -17,63 +18,72 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		<script type="text/javascript" src="js/ui/jquery.ui.progressbar.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.accordion.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.eComboBox.js"></script>
+		<!--<script type="text/javascript" src="js/ui/jquery.ui.selectmenu.js"></script>-->
 		<script language="javascript" type="text/javascript" src="js/jit-yc.js"></script>
 		<script type="text/javascript" src="lrbrowser.js"></script>
+		<script type="text/javascript" src="paradata.js"></script>
+		<script type="text/javascript" src="utils.js"></script>
 		<link type="text/css" href="themes/Aristo/Aristo.css" rel="stylesheet" />
 		<link type="text/css" href="themes/demos.css" rel="stylesheet" />
 		<link type="text/css" href="css/lrbrowser.css" rel="stylesheet" />
+		<!--<link type="text/css" href="css/jquery.ui.selectmenu.css" rel="stylesheet" />-->
 		<link type="text/css" href="css/Hypertree.css" rel="stylesheet" />
 	</head>
 	<body>
 		<div class=container>
 			<div class=header>
-				<div class="text">
-					<h2>Learning Registry Browser</h2>
+					<h1>Learning Registry Browser</h1>
+			</div>
+			<div class="main">
+				<div class=left_column >
+					
+					<div id="searchinput" style="text-align: center;">
+						<h4>SEARCH:</h4>
+						<input type=text id="term" size="12" autocomplete="off">
+						<button id="Search"/>
+							Go!
+						</button>
+					
+						<select id="serverselect" name="Server Select">
+							<option>node01.public.learningregistry.net</option>
+							<option>lrtest01.learningregistry.org</option>
+							<option>127.0.0.1:5000</option>
+							<option>lrdev03.learningregistry.org</option>
+						</select>
+						
+					</div>
+					<div class="text" >
+						<h4>STATUS:</h4>
+						<div style="text-align: center;">
+							<div id="progressbar" align="center"></div>
+						</div>
+						<div id="status">
+							...
+						</div>
+					</div>
+					<br>
+					<div class="text">
+						<h4>RESULTS SUMMARY:</h4>
+						<div id="results_summary"></div>
+					</div>
+					<br>
+					<div id = "debugDiv" class="text">
+						<h4>DEBUG:</h4>
+						<div id="debug">
+							...
+						</div>
+					</div>
 				</div>
-				<div id="searchinput" style="text-align: center;">
-					<input type=text id="term" size="15" autocomplete="off">
-					<button id="Search">
-						Search
-					</button>
-					<select id="serverselect" name="Server Select">
-						<option>lrtest01.learningregistry.org</option>
-						<option>node01.public.learningregistry.net</option>
-						<option>127.0.0.1:5000</option>
-						<option>lrdev03.learningregistry.org</option>
-					</select>
+				<div class=center_column >
+					<h4>TERM EXPLORER</h4>
+					<div id="infovis"/>
 				</div>
 			</div>
-			<div class=left_column >
-				<div class="text" >
-					<h4>STATUS:</h4>
-					<div style="text-align: center;">
-						<div id="progressbar" align="center"></div>
-					</div>
-					<div id="status">
-						...
-					</div>
+			<div class=right_column >
+				<span id="doc_list_header"></span>
+				<div id="document_list">
+					<div id="doc_list_accordion"/>
 				</div>
-				<br>
-				<div class="text">
-					<h4>RESULTS SUMMARY:</h4>
-					<div id="results_summary"></div>
-				</div>
-				<br>
-				<div class="text">
-					<h4>DEBUG:</h4>
-					<div id="debug">
-						...
-					</div>
-				</div>
-			</div>
-			<div class=center_column >
-				<div id="infovis"/>
-			</div>
-		</div>
-		<div class=right_column >
-			<div id="document_list">
-				<h4><span id="doc_list_header"></span></h4>
-				<div id="doc_list_accordion"/>
 			</div>
 		</div>
 	</body>
