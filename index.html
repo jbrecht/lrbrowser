@@ -28,19 +28,34 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		<link type="text/css" href="css/lrbrowser.css" rel="stylesheet" />
 		<!--<link type="text/css" href="css/jquery.ui.selectmenu.css" rel="stylesheet" />-->
 		<link type="text/css" href="css/Hypertree.css" rel="stylesheet" />
+		
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-26825770-1']);
+		  _gaq.push(['_trackPageview']);
+		
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		
+		</script>
+		
+		
 	</head>
 	<body>
 		<div class=container>
-			<div class=header>
-					<h1>Learning Registry Browser</h1>
-			</div>
+			<!--<div class=header>
+					<h1>LEARNING REGISTRY BROWSER</h1>
+			</div>-->
 			<div class="main">
 				<div class=left_column >
-					
+					<div id=spacer style="height: 65px;"></div>
 					<div id="searchinput" style="text-align: center;">
-						<h4>SEARCH:</h4>
+						<h4>SEARCH</h4>
 						<input type=text id="term" size="12" autocomplete="off">
-						<button id="Search"/>
+						<button id="Search">
 							Go!
 						</button>
 					
@@ -53,7 +68,7 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 						
 					</div>
 					<div class="text" >
-						<h4>STATUS:</h4>
+						<h4>STATUS</h4>
 						<div style="text-align: center;">
 							<div id="progressbar" align="center"></div>
 						</div>
@@ -63,28 +78,43 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					</div>
 					<br>
 					<div class="text">
-						<h4>RESULTS SUMMARY:</h4>
+						<h4>SEARCH SUMMARY</h4>
 						<div id="results_summary"></div>
+						<p></p>
+						<button id="secondary">Load Secondary Terms?</button>
 					</div>
 					<br>
 					<div id = "debugDiv" class="text">
-						<h4>DEBUG:</h4>
+						<h4>DEBUG</h4>
 						<div id="debug">
 							...
 						</div>
 					</div>
 				</div>
 				<div class=center_column >
+					<h1>LEARNING REGISTRY BROWSER</h1>
 					<h4>TERM EXPLORER</h4>
 					<div id="infovis"/>
 				</div>
 			</div>
 			<div class=right_column >
+				<div id=spacer style="height: 65px;"></div>
+				<h4>RESULTS</h4>
 				<span id="doc_list_header"></span>
 				<div id="document_list">
 					<div id="doc_list_accordion"/>
 				</div>
 			</div>
 		</div>
+<!--<script>
+jQuery(function(){
+        $("#Search").bind("click", function() {
+                try {
+                        var term = $("#term")[0].value;
+                        _gaq.push(['_trackEvent', 'LRBrowser', 'Go', term.toLowerCase()]);
+                } catch (e) {}
+        });
+});
+</script>-->
 	</body>
 </html>

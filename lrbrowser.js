@@ -4,9 +4,10 @@
 
 //var NODE_URL = "http://lrdev05.learningregistry.org";
 var NODE_URL = "http://node01.public.learningregistry.net";
+//var NODE_URL = "http://127.0.0.1:5000";
 var typeReturnCount = 0;
 
-var TRIM_SIZE = 20;
+var TRIM_SIZE = 12;
 
 var searchTerm;
 var sliceAsTagResultCount;
@@ -21,6 +22,7 @@ var summary_tag_count = 0;
 var summary_id_count = 0;
 
 var peek_count = 0;
+var peek_started = false;
 
 var node_click_count = 0;
 var currentClickedNode;
@@ -76,10 +78,19 @@ $(function() {
 			primary : 'ui-icon-search'
 		},
 		text : true
-	});
+	});	
+	
+	$("#secondary").hide();
 
 	$("#Search").click(function() {
 		startNewSearch($("#term").val());
+	});
+
+	$("#secondary").click(function() {
+		if(!peek_started) {
+			peekAhead(topNode);
+			$("#secondary").hide();
+		}
 	});
 
 	$("#progressbar").progressbar({
@@ -141,6 +152,10 @@ $(function() {
 });
 
 function startNewSearch(term) {
+	$("#secondary").hide();
+    try {
+            _gaq.push(['_trackEvent', 'LRBrowser', 'Search', term.toLowerCase()]);
+    } catch (e) {}
 	killOustandingRequests();
 	topNode = buildNode("Loading", "", TAG);
 	topNode.id = -1;
@@ -281,14 +296,32 @@ var handleSlice = function(finalCallback, search_data, quiet, parentNode) {
 	search_data.success = iterateSlice;
 	iterateSlice();
 }
+
 function buildDoc(doc) {
-	return {
+	var outDoc= {
 		id : doc.doc_id,
 		url : doc.resource_data_description.resource_locator,
 		keys : doc.resource_data_description.keys,
 		identity : doc.resource_data_description.identity,
 		type : doc.resource_data_description.resource_data_type
 	}
+	if(doc.resource_data_description.resource_data_type == "paradata") {
+		if(doc.resource_data_description.payload_placement=="inline") {
+			if((" "+doc.resource_data_description.payload_schema).indexOf("Comm")!=-1) {
+				var xmlDoc = $.parseXML(doc.resource_data_description.resource_data);
+				$xml = $( xmlDoc );
+				//paradataTitle, paradataDescription
+		    	outDoc.paradataTitle = $xml.find( "paradataTitle" );
+		    	outDoc.paradataDescription = $xml.find( "paradataDescription" ); 
+			} else {
+				outDoc.paradata_src = doc.resource_data_description.resource_data;
+			}
+		} else if(doc.payload_placement=="linked") {
+			outDoc.paradata_url =doc.resource_data_description.payload_locator;
+		}
+	}
+		
+	return outDoc;
 }
 
 function buildNode(value, parentValue, type) {
@@ -298,18 +331,22 @@ function buildNode(value, parentValue, type) {
 	else
 		idVal = value + "-" + type;
 
-	var shape;
+	var shape = 'star';
+	var color;
 	if(type == TAG)
-		shape = 'star';
+		//shape = 'star';
+		color = '#6B8E23';
 	else
-		shape = 'square';
+		//shape = 'square';
+		color = '#7A378B';
 
 	return {
 		id : idVal,
 		name : value,
 		data : {
 			$type : shape,
-			$dim : 1,
+			$dim : 10,
+			$color : color,
 			datatype : type,
 			doc_ids : [],
 			getGraphLabel : function() {
@@ -329,7 +366,7 @@ function addNodeChild(node, child) {
 function addNodeDocID(node, doc_id) {
 	if($.inArray(doc_id, node.data.doc_ids) < 0) {
 		node.data.doc_ids.push(doc_id);
-		var newSize = 50 * (node.data.doc_ids.length / max_results);
+		var newSize = 10 + 30 * (node.data.doc_ids.length / max_results);
 		node.data.$dim = newSize;
 	}
 }
@@ -342,6 +379,7 @@ function parseSliceResult(results) {
 	summary_doc_count = 0;
 	summary_tag_count = 0;
 	summary_id_count = 0;
+	peek_started = false;
 	if(searchTermType == TAG)
 		summary_tag_count++;
 	else
@@ -405,14 +443,16 @@ function parseSliceResult(results) {
 	status("Parsing complete.");
 	summary();
 	topNode.children = trimChildren(topNode.children, TRIM_SIZE);
-	//var trimmed = trimNodes(topNode, TRIM_SIZE);
-	//debug(JSON.stringify(topNode));
 	loadGraphData(topNode);
-	peekAhead(topNode);
+	status("Principle search complete");
+	$("#progressbar").progressbar("option", "value", 0);
+	if(summary_doc_count>0) $("#secondary").show();
 }
 
-function peekAhead(topNode) {
+function peekAhead() {
+	status("Exploring secondary terms...");
 	peek_count = 0;
+	peek_started = true;
 	sliceLimit = 500;
 	for(var key in topNode.children) {
 		var node = topNode.children[key];
@@ -474,11 +514,13 @@ function parseSecondarySliceResult(results, parentNode) {
 			}
 		}
 	}
-	parentNode.children = trimChildren(parentNode.children, 10);
+	parentNode.children = trimChildren(parentNode.children, 6);
 	//debug(JSON.stringify(topNode));
 	peek_count++;
+	$("#progressbar").progressbar("option", "value", 100 * (peek_count / TRIM_SIZE));
 	//if(peek_count==topNode.children.length-1) loadGraphData(topNode);
 	loadGraphData(topNode);
+	if(peek_count==(TRIM_SIZE-1)) status("Secondary term search complete");
 }
 
 function compareDocCounts(node1, node2) {
@@ -514,9 +556,8 @@ function buildGraph() {
 		//Change node and edge styles such as
 		//color, width and dimensions.
 		Node : {
-			dim : 9,
-			color : "#f00",
 			overridable : true,
+			color : "#00F"
 		},
 		Edge : {
 			lineWidth : 2,
@@ -536,10 +577,12 @@ function buildGraph() {
 			domElement.innerHTML = labelText;
 
 			$jit.util.addEvent(domElement, 'click', function() {
+				
 				currentClickedNode = node;
 				node_click_count++;
 
 				function handleNodeDoubleClick() {
+					$("#term").val(node.name);
 					startNewSearch(node.name)
 				}
 
@@ -556,9 +599,30 @@ function buildGraph() {
 			var style = domElement.style;
 			style.display = '';
 			style.cursor = 'pointer';
-			if(node._depth <= 1) {
-				style.fontSize = "1.0em";
+
+			if(node.id == topNode.id) {
+				style.fontSize = "1.4em";
 				style.color = "#ddd";
+				if(node.id == topNode.id) style.textTransform = "uppercase";
+			} else {
+				var pars = $jit.Graph.Util.getParents(node);
+				if(pars[0] && pars[0].id == topNode.id) {
+					style.fontSize = "1.0em";
+					style.color = "#ddd";
+				} else if(pars[0]){
+					var grandPars = $jit.Graph.Util.getParents(pars[0]);
+					if(grandPars[0] && grandPars[0].id == topNode.id) {
+						style.fontSize = "0.8em";
+						style.color = "#888";
+					}
+				}
+			}
+			
+			 
+			/*if(node._depth <= 1) {
+				style.fontSize = "0.9em";
+				style.color = "#ddd";
+				if(node.id == topNode.id) style.textTransform = "uppercase";
 
 			} else if(node._depth == 2) {
 				style.fontSize = "0.8em";
@@ -566,7 +630,8 @@ function buildGraph() {
 
 			} else {
 				style.display = 'none';
-			}
+				style.color = "#444";
+			}*/
 
 			var left = parseInt(style.left);
 			var w = domElement.offsetWidth;
@@ -592,10 +657,10 @@ function buildDocList(node) {
 	if(node.id == -1)
 		$("#doc_list_header").html('');
 	else if(node.id == topNode.id)
-		$("#doc_list_header").html('<h4>Entries for: ' + node.data.datatype + ' <b>"' + node.name + '"</b></h4>');
+		$("#doc_list_header").html('&nbsp;&nbsp;Entries for <i>' + node.data.datatype + ' <b>"' + node.name + '"</b></i>');
 	else
-		$("#doc_list_header").html('<h4>Entries for: ' + node.data.datatype + ' <b>"' + node.name + '"</b> and ' + 
-													topNode.data.datatype + ' <b>"' + topNode.name + '"</b></h4>');
+		$("#doc_list_header").html('&nbsp;&nbsp;Entries for <i>' + node.data.datatype + ' <b>"' + node.name + '"</b> and ' + 
+													topNode.data.datatype + ' <b>"' + topNode.name + '"</i></b>');
 	$("#doc_list_accordion").remove();
 	$("#document_list").append('<div id="doc_list_accordion"/>');
 	for(var doc_id in node.data.doc_ids) {
@@ -607,7 +672,6 @@ function buildDocList(node) {
 	});
 	buildAccordion();
 }
-
 
 function buildListing(doc_id) {
 	var doc = docDictionary[doc_id];
@@ -633,7 +697,25 @@ function buildListing(doc_id) {
 		if(doc.keys) {
 			output += '<b>keywords</b>: ';
 			output += doc.keys.join(", ");
+			output += '<br>';
 		}
+		if(doc.type) {
+			if(doc.type === "paradata") {
+				if(doc.paradata_url) {
+					output += '<a href="' + doc.paradata_url + '" target="_blank">View Paradata</a><br>'
+				} else if(doc.paradataTitle) {
+					output += '<b>title</b>: ' + doc.paradataTitle + '<br>';
+					output += '<b>description</b>: ' + doc.paradataDescription + '<br>';
+				} else if(doc.paradata_src) {
+					var escaped = "";
+					escaped += doc.paradata_src;
+					escaped = replaceAll(escaped, "<", "&lt;");
+					escaped = replaceAll(escaped, ">", "&gt;");
+					output += '<b>Raw Paradata</b>: <code>' + escaped + '</code><br>';
+				}
+			}
+		}
+
 		output += '</div>';
 
 		return output;
@@ -641,7 +723,9 @@ function buildListing(doc_id) {
 		return "---";
 	}
 }
-
+function replaceAll(txt, replace, with_this) {
+  return txt.replace(new RegExp(replace, 'g'),with_this);
+}
 function loadParadata(doc_id) {
 	doc_id = doc_id.split("_")[0];
 	debug("<p>load paradata: " + doc_id + "</p>");
@@ -653,10 +737,12 @@ function loadParadata(doc_id) {
 			debug("about to call obtain");
 			var obtainObject = buildObtainObject(url);
 			obtainObject.success = function(data) {
+				debug("obtained: " + JSON.stringify(data));
 				var doc_div = $('#' + doc_id);
-				//var paradataDisplay = buildParadataDisplay(data);
-				$('#' + doc_id).append("<b>Paradata</b>:");
-				$('#' + doc_id).append(JSON.stringify(data));
+				var paradataDisplay = buildParadataDisplay(data);
+				$('#' + doc_id).append(paradataDisplay);
+				/*$('#' + doc_id).append("<b>Paradata</b>:");
+				$('#' + doc_id).append(JSON.stringify(data));*/
 			};
 			$.ajax(obtainObject);
 		}
@@ -692,13 +778,10 @@ function clearGraphData() {
 }
 
 function loadGraphData(json, quiet) {
-	if(!quiet)
-		status("Loading graph data");
 	//load JSON data.
 	ht.loadJSON(json);
 	//compute positions and plot.
 	ht.refresh();
 	//end
 	ht.controller.onComplete();
-	status("Complete!");
 }

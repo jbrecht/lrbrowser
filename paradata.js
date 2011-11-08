@@ -1,63 +1,70 @@
 function buildParadataDisplay(data) {
 
-	var documents = data.documents.document;
+	var documents = data.documents[0].document;
+	var output = "<div><h4>Paradata</h4>";
+	var paradata_count = 0;
 	for(var i = 0; i < documents.length; i++) {
 		doc = documents[i];
 		if(doc.resource_data_type=="paradata") {
+			paradata_count++;
 			var paradataDoc = buildParadataDoc(doc);
+			output += buildParadataListing(paradataDoc, true);
+			output += "<br>";
 		}
-		
 	}
+	if(paradata_count == 0)  output += "No paradata found for this resource";
+	output += "</div>";
+	
+	return output;
 }
 
 function buildParadataDoc(doc) {
-	//debug("<p>buildParadataDoc: "+JSON.stringify(doc));
+	debug("<p>buildParadataDoc: "+JSON.stringify(doc));
 	var paradataDoc= {
 		id : doc.doc_id,
-		url : doc.resource_locator,
+		resource_url : doc.resource_locator,
 		identity : doc.identity,
 		payload_placement: doc.payload_placement
 	}
-	if(doc.payload_placement=="inline" && (" "+doc.payload_schema).indexOf("Comm")!=-1) {
-		//paradataDoc.comm_paradata_src = doc.resource_data;
-		var xmlDoc = $.parseXML(doc.resource_data);
-		$xml = $( xmlDoc );
-		//paradataTitle, paradataDescription
-    	paradataDoc.paradataTitle = $xml.find( "paradataTitle" );
-    	paradataDoc.paradataDescription = $xml.find( "paradataDescription" ); 
-		/*var paradataJson = $.xml2json(doc.resource_data);
-		paradataDoc.paradata = paradataJson;
-		debug("<p>paradata: "+ JSON.stringify(paradataJson));*/
+	if(doc.payload_placement=="inline") {
+		var isComm = false;
+		if((" "+doc.payload_schema).indexOf("Comm")!=-1 || (" "+doc.payload_schema).indexOf("comm")!=-1) {
+			var xmlDoc = $.parseXML(doc.resource_data);
+			$xml = $( xmlDoc );
+			//paradataTitle, paradataDescription
+	    	paradataDoc.paradataTitle = $xml.find( "paradataTitle" );
+	    	paradataDoc.paradataDescription = $xml.find( "paradataDescription" ); 
+		} else {
+			paradataDoc.paradata_src = doc.resource_data;
+		}
+	} else if(doc.payload_placement=="linked") {
+		paradataDoc.url = doc.payload_locator;
 	}
+	debug("built paradataDoc:  " + JSON.stringify(paradataDoc));
+	
+	return paradataDoc;
 }
 
 
 
-function buildParadataListing(doc_id) {
-	var doc = docDictionary[doc_id];
-	if(doc) {
-		var url = doc.url;
-		var obtain_url = NODE_URL + '/obtain?by_doc_ID=true&request_id=' + doc_id
-		var output = '<h3><a href="#">' + doc_id + '</a></h3>';
-		output += '<div id="' + doc_id + '">';
-		output += '<a href="' + url + '" target="_blank">View resource</a>'
-		output += ' | <a href="' + obtain_url + '" target="_blank">View Full Learning Registry entry</a><br>';
-		output += '<button id="' + doc_id + '_loadPara" class="paradataLoader">Find Paradata</button> <br><br>';
-		/*if(doc.type) {
-		 output += '<b>type</b>: ' + doc.type+ '<br><br>';
-		 }*/
-		for(var identity_type in doc.identity) {
-			var identity_value = doc.identity[identity_type];
+function buildParadataListing(paradataDoc, includeID) {
+	debug("build paradata listing...");
+	var output = '<div id="' + paradataDoc.id + '_paradata">';
+	if(includeID) {
+		for(var identity_type in paradataDoc.identity) {
+			var identity_value = paradataDoc.identity[identity_type];
 			output += '<b>' + identity_type + '</b>: ' + identity_value + '<br>';
 		}
-		if(doc.keys) {
-			output += '<b>keywords</b>: ';
-			output += doc.keys.join(", ");
-		}
-		output += '</div>';
-
-		return output;
-	} else {
-		return "---";
 	}
+	if(paradataDoc.url) {
+		output += '<a href="' + paradataDoc.url + '" target="_blank">View Paradata</a><br>'
+	} else if(paradataDoc.paradataTitle){
+		output += '<b>title</b>: ' + paradataDoc.paradataTitle + '<br>';
+		output += '<b>description</b>: ' + paradataDoc.paradataDescription + '<br>';
+	} else if(paradataDoc.paradata_src) {
+		output += '<b>Raw Paradata</b>: ' + paradataDoc.paradata_src + '<br>';
+	}
+	output += '</div>';
+
+	return output;
 }
