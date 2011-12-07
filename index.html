@@ -4,9 +4,11 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
+		<link href="mag.png" rel="icon" type="image/x-icon">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Learning Registry Browser</title>
 		<link type="text/css" href="themes/jquery.ui.all.css" rel="stylesheet" />
+		<!--[if IE]><script src="excanvas.js"></script><![endif]-->
 		<script type="text/javascript" src="js/jquery-1.6.2.js"></script>
 		<script type="text/javascript" src="js/jquery.xml2json.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.core.js"></script>
@@ -18,15 +20,15 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		<script type="text/javascript" src="js/ui/jquery.ui.progressbar.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.accordion.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.eComboBox.js"></script>
-		<!--<script type="text/javascript" src="js/ui/jquery.ui.selectmenu.js"></script>-->
+		<script type="text/javascript" src="js/ui/jquery.collapse.js"></script>
+		<script type="text/javascript" src="js/ui/jquery.cookie.js"></script>
 		<script language="javascript" type="text/javascript" src="js/jit-yc.js"></script>
 		<script type="text/javascript" src="lrbrowser.js"></script>
 		<script type="text/javascript" src="paradata.js"></script>
 		<script type="text/javascript" src="utils.js"></script>
 		<link type="text/css" href="themes/Aristo/Aristo.css" rel="stylesheet" />
-		<link type="text/css" href="themes/demos.css" rel="stylesheet" />
+		<!--<link type="text/css" href="themes/demos.css" rel="stylesheet" />-->
 		<link type="text/css" href="css/lrbrowser.css" rel="stylesheet" />
-		<!--<link type="text/css" href="css/jquery.ui.selectmenu.css" rel="stylesheet" />-->
 		<link type="text/css" href="css/Hypertree.css" rel="stylesheet" />
 		
 		<script type="text/javascript">
@@ -54,18 +56,9 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					<div id=spacer style="height: 65px;"></div>
 					<div id="searchinput" style="text-align: center;">
 						<h4>SEARCH</h4>
-						<input type=text id="term" size="12" autocomplete="off">
-						<button id="Search">
-							Go!
-						</button>
-					
-						<select id="serverselect" name="Server Select">
-							<option>node01.public.learningregistry.net</option>
-							<option>lrtest01.learningregistry.org</option>
-							<option>127.0.0.1:5000</option>
-							<option>lrdev03.learningregistry.org</option>
-						</select>
-						
+						<input type=text id="term" size="10" autocomplete="off">
+						<button id="Search">Go!</button>
+						<button id="Help">Help</button>
 					</div>
 					<div class="text" >
 						<h4>STATUS</h4>
@@ -94,7 +87,38 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 				<div class=center_column >
 					<h1>LEARNING REGISTRY BROWSER</h1>
 					<h4>TERM EXPLORER</h4>
-					<div id="infovis"/>
+					<div><div id="infovis"/></div>
+					
+					<div id="controls" align="center" class=controls>
+						<h3>ADVANCED</h3>
+						<div>
+							<div class=control_panel>
+								<b>Primary Branch Limit: </b><span id="primaryLimit"> 12</span>
+								<p>
+								<div id="primaryLimitSlider"></div>
+							</div>
+							<div class=control_panel>
+								<b>Secondary Branch Limit: </b><span id="secondaryLimit"> 6</span>
+								<p>
+								<div id="secondaryLimitSlider"></div>
+							</div>
+							<div class=control_panel>
+								<b>Entry Limit: </b><span id="entryLimit"> 500</span>
+								<p>
+								<div id="entryLimitSlider"></div>
+							</div>
+							<p><p>
+							<div>
+								<b>LR Node: </b>
+								<select id="serverselect" name="Server Select">
+									<option>node01.public.learningregistry.net</option>
+									<option>lrtest01.learningregistry.org</option>
+									<option>127.0.0.1:5000</option>
+									<option>lrdev03.learningregistry.org</option>
+								</select>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class=right_column >

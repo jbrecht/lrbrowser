@@ -8,6 +8,7 @@ var NODE_URL = "http://node01.public.learningregistry.net";
 var typeReturnCount = 0;
 
 var TRIM_SIZE = 12;
+var SECONDARY_TRIM_SIZE = 6;
 
 var searchTerm;
 var sliceAsTagResultCount;
@@ -43,7 +44,7 @@ var labelType, useGradients, nativeTextSupport, animate;
 
 var identityTypes = ["curator", "owner", "submitter"];
 
-var ht;
+var hypertree;
 
 var $search_confirm_dialog;
 
@@ -73,17 +74,69 @@ $(function() {
 	$("button").button();
 	//$('select').selectmenu();
 	//$("#doc_list_accordion" ).accordion();
+	$("#controls" ).collapse();
 	$("#Search").button({
 		icons : {
 			primary : 'ui-icon-search'
 		},
 		text : true
-	});	
+	});		
+	
+	$("#Help").button({
+		icons: {
+			primary: 'ui-icon-help'
+		},
+		text: false
+	});
 	
 	$("#secondary").hide();
 
 	$("#Search").click(function() {
 		startNewSearch($("#term").val());
+	});
+	$("#term").keypress(function(e) {
+	    if(e.keyCode == 13) {
+	        startNewSearch($("#term").val());
+	    }
+	});
+
+	$( "#primaryLimit" ).html(TRIM_SIZE);
+	$( "#primaryLimitSlider" ).slider({
+		min: 2,
+		max: 30,
+		value: TRIM_SIZE,
+		slide: function(event, ui) {
+			TRIM_SIZE = ui.value;
+			$( "#primaryLimit" ).html(TRIM_SIZE);
+		}
+	});
+
+	$( "#secondaryLimit" ).html(SECONDARY_TRIM_SIZE);
+	$( "#secondaryLimitSlider" ).slider({
+		min: 2,
+		max: 20,
+		value: SECONDARY_TRIM_SIZE,
+		slide: function(event, ui) {
+			SECONDARY_TRIM_SIZE = ui.value;
+			$( "#secondaryLimit" ).html(SECONDARY_TRIM_SIZE);
+		}
+	});
+
+	$( "#entryLimit" ).html(SUGGESTED_SLICE_LIMIT);
+	$( "#entryLimitSlider" ).slider({
+		min: 100,
+		max: 3000,
+		step: 100,
+		value: SUGGESTED_SLICE_LIMIT,
+		slide: function(event, ui) {
+			SUGGESTED_SLICE_LIMIT = ui.value;
+			$( "#entryLimit" ).html(SUGGESTED_SLICE_LIMIT);
+		}
+	});
+	
+	
+	$("#Help").click(function() {
+		window.open("help.html","Learning Registry Browser Help",'width=500,height=500,menubar=no,scrollbars=yes,toolbar=no');
 	});
 
 	$("#secondary").click(function() {
@@ -98,7 +151,7 @@ $(function() {
 		disabled : true
 	});
 
-	if(debugMode) { 
+	/*if(debugMode) { 
 		$("#serverselect").eComboBox({
 			'allowNewElements' : true,
 			'editableElements' : false
@@ -109,32 +162,17 @@ $(function() {
 	} else {
 		$("#serverselect").hide();
 		$("#debugDiv").hide();
-	}
+	}*/
 	
-	$search_confirm_dialog = $('<div></div>').dialog({
-		resizable : false,
-		autoOpen : false,
-		title : 'Confirm search',
-		modal : true,
-		buttons : {
-			"Retrieve all results" : function() {
-				sliceLimit = SLICE_LIMIT_MAX;
-				$(this).dialog("close");
-				handleSlice(parseSliceResult, post_confirm_search_data);
-			},
-			"Retrieve first 500 results" : function() {
-				sliceLimit = SUGGESTED_SLICE_LIMIT;
-				max_results = SUGGESTED_SLICE_LIMIT;
-				$(this).dialog("close");
-				handleSlice(parseSliceResult, post_confirm_search_data);
-			},
-			Cancel : function() {
-				sliceLimit = -1;
-				$(this).dialog("close");
-			}
-		}
+	$("#serverselect").eComboBox({
+		'allowNewElements' : true,
+		'editableElements' : false
 	});
-
+	$("#serverselect").change(function() {
+		NODE_URL = "http://" + $("#serverselect").val();
+	});
+	$("#debugDiv").hide();
+	
 	$.ajaxSetup({
 		dataType : 'jsonp',
 		jsonp : 'callback',
@@ -152,6 +190,7 @@ $(function() {
 });
 
 function startNewSearch(term) {
+	if(term.length==0) return;
 	$("#secondary").hide();
     try {
             _gaq.push(['_trackEvent', 'LRBrowser', 'Search', term.toLowerCase()]);
@@ -241,8 +280,32 @@ function compareTagAndIdentityCountResults() {
 }
 
 function confirmSearch() {
-	$search_confirm_dialog.html("This search will return as many as " + max_results + " results.");
-	$search_confirm_dialog.dialog('open');
+	//$search_confirm_dialog.html("This search will return as many as " + max_results + " results.");
+	//$search_confirm_dialog.dialog('open');
+
+	var btns = {};
+	btns["Retrieve all results"] = function() {
+				sliceLimit = SLICE_LIMIT_MAX;
+				$(this).dialog("close");
+				handleSlice(parseSliceResult, post_confirm_search_data);
+			};
+	btns["Retrieve first " + SUGGESTED_SLICE_LIMIT + " results"] = function() { 
+				sliceLimit = SUGGESTED_SLICE_LIMIT;
+				max_results = SUGGESTED_SLICE_LIMIT;
+				$(this).dialog("close");
+				handleSlice(parseSliceResult, post_confirm_search_data);
+			};
+	btns["Cancel"] = function() { 
+				sliceLimit = -1;
+				$(this).dialog("close");
+			};
+	$("<div>This search will return as many as " + max_results + " results.</div>").dialog({
+		autoOpen : true,
+		title : 'Confirm search',
+		modal : true,
+		buttons : btns
+	});
+	
 }
 
 function buildSliceObject(dataArg) {
@@ -385,7 +448,7 @@ function parseSliceResult(results) {
 	else
 		summary_id_count++;
 
-	status("Parsing results for " + documents.length + " documents");
+	status("Parsing results for " + documents.length + " entries");
 	for(var i = 0; i < documents.length; i++) {
 		doc = documents[i];
 		/*if(doc.resource_data_description.resource_data_type == "paradata" && i<25) {
@@ -514,7 +577,7 @@ function parseSecondarySliceResult(results, parentNode) {
 			}
 		}
 	}
-	parentNode.children = trimChildren(parentNode.children, 6);
+	parentNode.children = trimChildren(parentNode.children, SECONDARY_TRIM_SIZE);
 	//debug(JSON.stringify(topNode));
 	peek_count++;
 	$("#progressbar").progressbar("option", "value", 100 * (peek_count / TRIM_SIZE));
@@ -547,7 +610,7 @@ function buildGraph() {
 	var w = infovis.offsetWidth - 50, h = infovis.offsetHeight - 50;
 
 	//init Hypertree
-	ht = new $jit.Hypertree({
+	hypertree = new $jit.Hypertree({
 		//id of the visualization container
 		injectInto : 'infovis',
 		//canvas width and height
@@ -638,7 +701,7 @@ function buildGraph() {
 			style.left = (left - w / 2) + 'px';
 		},
 		onComplete : function() {
-			var node = ht.graph.getClosestNodeToOrigin("current");
+			var node = hypertree.graph.getClosestNodeToOrigin("current");
 			buildDocList(node);
 		}
 	});
@@ -646,9 +709,9 @@ function buildGraph() {
 
 function handleNodeSingleClick() {
 	node_click_count = 0;
-	ht.onClick(currentClickedNode.id, {
+	hypertree.onClick(currentClickedNode.id, {
 		onComplete : function() {
-			ht.controller.onComplete();
+			hypertree.controller.onComplete();
 		}
 	});
 }
@@ -770,18 +833,18 @@ function buildAccordion() {
 function clearGraphData() {
 	var empty = buildNode("loading", "", TAG);
 	//load JSON data.
-	ht.loadJSON(empty);
+	hypertree.loadJSON(empty);
 	//compute positions and plot.
-	ht.refresh();
+	hypertree.refresh();
 	//end
-	ht.controller.onComplete();
+	hypertree.controller.onComplete();
 }
 
 function loadGraphData(json, quiet) {
 	//load JSON data.
-	ht.loadJSON(json);
+	hypertree.loadJSON(json);
 	//compute positions and plot.
-	ht.refresh();
+	hypertree.refresh();
 	//end
-	ht.controller.onComplete();
+	hypertree.controller.onComplete();
 }

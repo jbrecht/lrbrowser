@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<link type="text/css" href="css/lrbrowser.css" rel="stylesheet" />
+		<style type="text/css">
+			body {
+		    	text-align: left;
+			    margin:10px;
+		    }
+		
+		</style>
+	</head>
+	<body>
+		<h1>HELP</h1>
+		<p><i>Warning: The Learning Registry Browser will not work properly with Internet Explorer prior to version 9. 
+			Other browsers should work fine. Click <a href="http://caniuse.com/canvas">here</a> for more info.</i></p>
+		<h3>Basics</h3>
+		<p>To use the Learning Registry Browser, enter a search term (e.g. a keyword or author) and press Go! The
+			Browser will query the Learning Registry for documents containing that term. As documents are retrieved, 
+			other terms in the result set are indexed. A graph (the Term Explorer) is rendered in the center of the 
+			browser showing the search. Summaries of the resultant documents are displayed on the right (Resuts).</p>
+		<h3>Search</h3>
+		<p>
+			Search terms can be either tags or identities. Tags include keywords, schemas, or resource data types. 
+			Identities include submitters, curators, owners, and signers. Before documents are retrieved for indexing
+			and display, if the search term will yield a large result set, the user will be given an option to limit the 
+			size of the result set.
+		</p>
+		<h3>Term Explorer</h3>
+		<p>The Term Explorer is a graph that allows the user to view the local semantic landscape of the Learning
+			Registry. Central in the graph is the searched term. The top "related" tags and identities are displayed 
+			in a ring around that term. "Related" terms are those tags and identities that also appear in documents 
+			containing the searched term.  Numerals in parentheses after each term indicate the number of documents in
+			the result set containing that term.</p>
+		<p>At any time, you can click the "Load Secondary Terms" button, which appears at the bottom of the left column.
+			this causes the Browser to query the Learning Registry for each of the related terms. Terms related to those
+			terms are displayed as grandchildren in the graph, as results filter in.</p>
+		<p>Double-clicking on a related term in the graph will cause the browser to begin a new search, centered on that term.</p>
+		<h3>Results</h3>
+		<p>In the right column of the Browser, individual result documents are displayed. Initially, all results
+			for the searched term are displayed. If you click on a related term in the graph, the graph will center
+			on that term and the document list will be filtered to those documents containing the search term AND the
+			related term.</p>
+		<p>The Results display shows a summary of each document, not the entire document. Click "View Full Learning Registry entry"
+			so see the entire raw JSON document from the Learning Registry. CLick "View resource" to link to the Learning
+			Resource described by the metadata or paradata in the result document. If the document is a metadata description,
+			you can click a "Load Paradata" button, which causes the browser to search for paradata that are related to
+			the same Learning Resource as is described by that metadata.
+			</p>
+	</body>
+	
+</html>
