@@ -28,6 +28,7 @@ var searchTerm;
 var sliceAsTagResultCount;
 var sliceAsIdentityResultCount;
 var max_results;
+var limit_results;
 var SLICE_LIMIT_MAX = 100000;
 var SUGGESTED_SLICE_LIMIT = 500;
 var sliceLimit = SLICE_LIMIT_MAX;
@@ -185,7 +186,7 @@ $(function() {
 	$("#serverselect").change(function() {
 		NODE_URL = "http://" + $("#serverselect").val();
 	});
-	$("#debugDiv").hide();
+	if(!debugMode) $("#debugDiv").hide();
 	
 	$.ajaxSetup({
 		dataType : 'jsonp',
@@ -205,9 +206,11 @@ $(function() {
 
 function startNewSearch(term) {
 	if(term.length==0) return;
+	$("#progressbar").progressbar("option", "value", 0);
+	clearSummary();
 	$("#secondary").hide();
     try {
-            _gaq.push(['_trackEvent', 'LRBrowser', 'Search', term.toLowerCase()]);
+    	_gaq.push(['_trackEvent', 'LRBrowser', 'Search', term.toLowerCase()]);
     } catch (e) {}
 	killOustandingRequests();
 	topNode = buildNode("Loading", "", TAG);
@@ -237,6 +240,10 @@ function summary() {
 	msg = msg + "<p>Results contained " + summary_tag_count + " tags & " + summary_id_count + " identities.</p>";
 	msg = msg + "<p>Limiting display to " + TRIM_SIZE + " items.";
 	$('#results_summary').html(msg);
+}
+
+function clearSummary() {
+	$('#results_summary').html("");
 }
 
 function startDetermineType() {
@@ -301,11 +308,20 @@ function confirmSearch() {
 	btns["Retrieve all results"] = function() {
 				sliceLimit = SLICE_LIMIT_MAX;
 				$(this).dialog("close");
+				limit_results = false;
 				handleSlice(parseSliceResult, post_confirm_search_data);
 			};
 	btns["Retrieve first " + SUGGESTED_SLICE_LIMIT + " results"] = function() { 
 				sliceLimit = SUGGESTED_SLICE_LIMIT;
+				limit_results = true;
 				max_results = SUGGESTED_SLICE_LIMIT;
+				$(this).dialog("close");
+				handleSlice(parseSliceResult, post_confirm_search_data);
+			};
+	btns["Retrieve some other number of results..."] = function() { 
+				max_results = prompt('Enter the maximum results to retrieve', '500');
+				sliceLimit = max_results;
+				limit_results = true;
 				$(this).dialog("close");
 				handleSlice(parseSliceResult, post_confirm_search_data);
 			};
@@ -337,6 +353,13 @@ var handleSlice = function(finalCallback, search_data, quiet, parentNode) {
 	var iterateSlice = function(slicedata) {
 		if(slicedata) {
 			finalResult = finalResult.concat(slicedata.documents);
+			
+			//now max_results actually refines as you go, as redundancies are found
+			if(!limit_results) {
+				debug("not limiting results, updating max");
+				max_results = slicedata.resultCount
+			}
+			
 			if(!quiet) {
 				status("Retrieved data " + finalResult.length + "/" + max_results);
 				$("#progressbar").progressbar("option", "value", 100 * (finalResult.length / max_results));
@@ -348,7 +371,7 @@ var handleSlice = function(finalCallback, search_data, quiet, parentNode) {
 					if(!quiet)
 						status("Received the same resumption token twice, aborting...");
 					finalCallback(finalResult, parentNode);
-				} else if(finalResult.length > sliceLimit) {
+				} else if(finalResult.length >= sliceLimit) {
 					if(!quiet)
 						status("Reached limit, aborting...");
 					finalCallback(finalResult, parentNode);
@@ -444,6 +467,8 @@ function addNodeDocID(node, doc_id) {
 	if($.inArray(doc_id, node.data.doc_ids) < 0) {
 		node.data.doc_ids.push(doc_id);
 		var newSize = 10 + 30 * (node.data.doc_ids.length / max_results);
+		//temporarily setting to static size until count issue is fixed
+		//var newSize = 25;
 		node.data.$dim = newSize;
 	}
 }
@@ -522,12 +547,12 @@ function parseSliceResult(results) {
 	topNode.children = trimChildren(topNode.children, TRIM_SIZE);
 	loadGraphData(topNode);
 	status("Principle search complete");
-	$("#progressbar").progressbar("option", "value", 0);
 	if(summary_doc_count>0) $("#secondary").show();
 }
 
 function peekAhead() {
 	status("Exploring secondary terms...");
+	$("#progressbar").progressbar("option", "value", 0);
 	peek_count = 0;
 	peek_started = true;
 	sliceLimit = 500;
